@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Comparison Structures Quiz</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f4f8fb;
+    color: #1f2937;
+    margin: 0;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 24px 20px 70px; }
+  h1 { text-align: center; font-size: 28px; margin: 0 0 14px; color: #1e5fa8; }
+
+  /* Time bar */
+  .timer-bar {
+    position: sticky; top: 0; z-index: 20;
+    background: #1e5fa8; color: #fff;
+    padding: 10px 16px 12px;
+    border-radius: 0 0 10px 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.15);
+  }
+  .timer-row { display: flex; justify-content: space-between; align-items: baseline; font-weight: bold; font-size: 17px; }
+  .timer-row .limit { font-weight: normal; font-size: 14px; opacity: .9; }
+  .track { height: 10px; background: rgba(255,255,255,.28); border-radius: 5px; margin-top: 8px; overflow: hidden; }
+  .fill { height: 100%; width: 0%; background: #7ee0b5; border-radius: 5px; transition: width .4s linear, background .4s; }
+  .fill.warn { background: #ffd166; }
+  .fill.over { background: #ff6b5e; }
+
+  .directions {
+    background: #fff8e1; border: 1px solid #f0c94a; border-left: 6px solid #f0b429;
+    padding: 14px 16px; margin: 18px 0 20px; font-style: italic; border-radius: 6px;
+  }
+
+  /* Part chips */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+  .chip {
+    border: 1px solid #b9c7d6; background: #fff; color: #374151;
+    border-radius: 18px; padding: 6px 14px; font-size: 14px; font-weight: bold; cursor: pointer;
+  }
+  .chip.active { background: #1e5fa8; border-color: #1e5fa8; color: #fff; }
+  .chip.done:not(.active) { background: #e6f4ee; border-color: #2f8f6f; color: #1d6b50; }
+  .page-indicator {
+    text-align: center; font-weight: bold; color: #6b7280; letter-spacing: 1px;
+    margin-bottom: 12px; font-size: 14px; text-transform: uppercase;
+  }
+
+  /* Questions */
+  .question {
+    background: #fff; border: 1px solid #e0e6ed; border-radius: 8px;
+    padding: 14px 18px; margin: 14px 0; box-shadow: 0 1px 2px rgba(0,0,0,.04);
+  }
+  .qtext { font-weight: bold; color: #1e5fa8; margin: 0 0 8px; font-size: 17px; }
+  .qtext .num { margin-right: 4px; }
+  .option {
+    display: block; margin: 4px 0; padding: 6px 8px; border-radius: 4px; cursor: pointer;
+  }
+  .option:hover { background: #eaf2ff; }
+  .option input { margin-right: 8px; }
+
+  .warning { text-align: center; color: #c0392b; font-weight: bold; margin-top: 14px; display: none; }
+  .nav-row { display: flex; justify-content: space-between; align-items: center; margin-top: 26px; }
+  .navBtn {
+    padding: 12px 28px; font-size: 15px; font-weight: bold; border: none; border-radius: 24px;
+    cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,.15);
+  }
+  .backBtn { background: #e5e9ee; color: #374151; }
+  .backBtn:hover { background: #d4dae2; }
+  .nextBtn { background: #2f8f6f; color: #fff; }
+  .nextBtn:hover { background: #257a5d; }
+
+  /* Result */
+  #result { display: none; }
+  .score-card {
+    background: #fff; border: 2px solid #2f8f6f; border-radius: 12px; text-align: center;
+    padding: 24px 20px; margin: 26px auto 24px; box-shadow: 0 4px 10px rgba(0,0,0,.08);
+  }
+  .score-card h2 { margin: 0 0 6px; color: #2f8f6f; font-size: 24px; }
+  .score-card .big { font-size: 52px; font-weight: bold; color: #1e5fa8; margin: 4px 0; }
+  .score-card .meta { font-size: 16px; color: #374151; }
+  .panel { background: #fff; border: 1px solid #e0e6ed; border-radius: 10px; padding: 16px 18px; margin-bottom: 22px; }
+  .panel h3 { margin: 0 0 12px; font-size: 18px; color: #1e5fa8; }
+  .topic-row { display: grid; grid-template-columns: 1fr 120px 56px; gap: 10px; align-items: center; padding: 6px 0; border-bottom: 1px solid #eef1f5; font-size: 15px; }
+  .topic-row:last-child { border-bottom: none; }
+  .topic-row .tname small { display: block; color: #6b7280; font-size: 13px; }
+  .mini-track { height: 10px; background: #e5e9ee; border-radius: 5px; overflow: hidden; }
+  .mini-fill { height: 100%; background: #2f8f6f; }
+  .mini-fill.low { background: #e0883a; }
+  .topic-row .tscore { text-align: right; font-weight: bold; }
+  .review-hint { margin-top: 12px; font-size: 14px; color: #374151; }
+
+  .filters { display: flex; gap: 8px; margin: 6px 0 14px; flex-wrap: wrap; }
+  .filterBtn {
+    border: 1px solid #b9c7d6; background: #fff; border-radius: 18px; padding: 7px 16px;
+    font-weight: bold; font-size: 14px; cursor: pointer; color: #374151;
+  }
+  .filterBtn.active { background: #1e5fa8; border-color: #1e5fa8; color: #fff; }
+
+  .rev { background: #fff; border: 1px solid #e0e6ed; border-left: 6px solid #9aa5b1; border-radius: 8px; padding: 14px 18px; margin: 14px 0; }
+  .rev.ok { border-left-color: #2f8f6f; }
+  .rev.bad { border-left-color: #c0392b; }
+  .rev.skip { border-left-color: #e0883a; }
+  .rev-head { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; margin-bottom: 4px; }
+  .rev-status { font-weight: bold; font-size: 14px; white-space: nowrap; }
+  .rev.ok .rev-status { color: #1d6b50; }
+  .rev.bad .rev-status { color: #c0392b; }
+  .rev.skip .rev-status { color: #b86a1c; }
+  .rev-topic { font-size: 13px; color: #6b7280; margin-bottom: 8px; }
+  .ropt { padding: 6px 10px; border-radius: 6px; margin: 4px 0; border: 1px solid transparent; }
+  .ropt.correct { background: #e6f4ee; border-color: #2f8f6f; }
+  .ropt.wrong { background: #fdecea; border-color: #c0392b; }
+  .ropt .tag { font-weight: bold; font-size: 13px; margin-left: 6px; }
+  .ropt.correct .tag { color: #1d6b50; }
+  .ropt.wrong .tag { color: #c0392b; }
+  .exp { background: #f1f6fc; border-radius: 6px; padding: 10px 12px; margin-top: 10px; font-size: 15px; }
+  .exp b { color: #1e5fa8; }
+  .retry { display: block; margin: 30px auto 0; background: #2f8f6f; color: #fff; border: none; border-radius: 24px; padding: 12px 34px; font-size: 16px; font-weight: bold; cursor: pointer; }
+  .retry:hover { background: #257a5d; }
+
+  @media (max-width: 560px) {
+    .topic-row { grid-template-columns: 1fr 80px 48px; }
+    h1 { font-size: 23px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Comparison Structures Quiz</h1>
+
+  <div class="timer-bar" id="timerBar">
+    <div class="timer-row">
+      <span>⏱ <span id="elapsed">00:00</span></span>
+      <span class="limit" id="limitLabel">Suggested time: 30:00</span>
+    </div>
+    <div class="track"><div class="fill" id="timeFill"></div></div>
+  </div>
+
+  <div class="directions" id="directions">
+    Directions: Choose the best answer (A, B, C or D) for each of the 60 questions. You can move between parts and change your answers before you submit. After you submit, you will see your score, your result for each structure, and an explanation for every question.
+  </div>
+
+  <div id="quiz">
+    <div class="chips" id="chips"></div>
+    <div class="page-indicator" id="pageIndicator"></div>
+    <div id="pageBody"></div>
+    <div class="warning" id="warning"></div>
+    <div class="nav-row">
+      <button type="button" class="navBtn backBtn" id="backBtn">&larr; Back</button>
+      <button type="button" class="navBtn nextBtn" id="nextBtn">Next &rarr;</button>
+    </div>
+  </div>
+
+  <div id="result">
+    <div class="score-card">
+      <h2>Test Completed!</h2>
+      <div>Your Score</div>
+      <div class="big" id="scorePercent">0%</div>
+      <div class="meta"><span id="scoreCount"></span> &nbsp;|&nbsp; Time taken: <span id="finalTime"></span></div>
+    </div>
+
+    <div class="panel">
+      <h3>Your result for each structure</h3>
+      <div id="topicRows"></div>
+      <div class="review-hint" id="reviewHint"></div>
+    </div>
+
+    <h3 style="color:#1e5fa8;margin:0 0 8px;">Review and explanations</h3>
+    <div class="filters">
+      <button type="button" class="filterBtn active" data-filter="all" id="fAll">All questions</button>
+      <button type="button" class="filterBtn" data-filter="wrong" id="fWrong">Wrong or skipped only</button>
+    </div>
+    <div id="reviewList"></div>
+    <button type="button" class="retry" id="retryBtn">Try again</button>
+  </div>
+</div>
+
+<script>
+const QUESTIONS = [{"topic":1,"stem":"Swimming is ______ than jogging for your knees.","opts":["more good","better","gooder","the best"],"c":1,"exp":"Có \"than\" nên cần dạng so sánh hơn. \"good\" là tính từ bất quy tắc: good → better → the best. \"gooder\" không tồn tại; \"the best\" là so sánh nhất."},{"topic":1,"stem":"In December, Da Lat is ______ than Ho Chi Minh City.","opts":["cold","more cold","the coldest","colder"],"c":3,"exp":"\"cold\" là tính từ ngắn nên thêm -er: colder than. Không dùng \"more\" với tính từ ngắn; \"the coldest\" là so sánh nhất."},{"topic":1,"stem":"This new phone is ______ than my old one.","opts":["more expensive","expensiver","most expensive","as expensive"],"c":0,"exp":"\"expensive\" là tính từ dài nên dùng more + adj + than. Không thêm -er vào tính từ dài (expensiver); \"as expensive\" không đi với \"than\"."},{"topic":1,"stem":"Fruit is ______ than candy.","opts":["healthy","healthiest","healthier","most healthy"],"c":2,"exp":"\"healthy\" tận cùng phụ âm + -y → đổi y thành i rồi thêm -er: healthier than."},{"topic":1,"stem":"The train is ______ than the bus.","opts":["comfortabler","more comfortable","the most comfortable","most comfortable"],"c":1,"exp":"\"comfortable\" là tính từ dài → more comfortable than. \"the most comfortable\" là so sánh nhất, không đi với \"than\"."},{"topic":1,"stem":"My new school is ______ than my old school.","opts":["biger","more big","bigger","the biggest"],"c":2,"exp":"\"big\" có một nguyên âm + một phụ âm cuối → gấp đôi phụ âm rồi thêm -er: bigger than."},{"topic":1,"stem":"Online shopping is ______ than shopping in a store.","opts":["easyer","more easy","easiest","easier"],"c":3,"exp":"\"easy\" tận cùng -y → đổi y thành i rồi thêm -er: easier than. \"easyer\" sai chính tả; \"more easy\" không dùng với tính từ ngắn."},{"topic":1,"stem":"Lan is 25 years old. Mai is 22 years old. Lan is ______ Mai.","opts":["older than","more old than","oldest than","as old than"],"c":0,"exp":"Lan nhiều tuổi hơn Mai → older than. \"old\" là tính từ ngắn nên thêm -er; không dùng \"more old\"; \"oldest\" là so sánh nhất và không đi với \"than\"."},{"topic":2,"stem":"Fansipan is ______ mountain in Vietnam.","opts":["higher","the highest","highest","the most high"],"c":1,"exp":"So sánh nhất của tính từ ngắn: the + adj-est. Trước danh từ \"mountain\" phải có \"the\": the highest mountain. \"the most high\" sai vì \"high\" là tính từ ngắn."},{"topic":2,"stem":"This is ______ restaurant in our town.","opts":["best","the better","the best","the goodest"],"c":2,"exp":"\"good\" → better → the best (bất quy tắc). Trước danh từ phải có \"the\": the best restaurant. \"the better\" là so sánh hơn, không hợp với cả một thị trấn."},{"topic":2,"stem":"That was ______ film I have ever seen. I almost fell asleep.","opts":["the most boring","boringest","more boring","most boring"],"c":0,"exp":"\"boring\" là tính từ dài → the most boring. Không thêm -est vào tính từ dài; thiếu \"the\" (most boring film) là sai."},{"topic":2,"stem":"Nam is ______ student in my class.","opts":["taller","the tallest","tallest","more tall"],"c":1,"exp":"So sánh với cả lớp nên dùng so sánh nhất: the tallest student. \"taller\" cần có \"than\"; thiếu \"the\" ở \"tallest student\" là sai."},{"topic":2,"stem":"Messi is one of ______ players in the world.","opts":["more famous","most famous","the most famous","the famousest"],"c":2,"exp":"\"famous\" là tính từ dài → the most famous. Cấu trúc: one of the + superlative + danh từ số nhiều."},{"topic":2,"stem":"Hoa is the youngest ______ the three sisters.","opts":["of","in","at","on"],"c":0,"exp":"Sau so sánh nhất, dùng \"of\" + danh từ số nhiều xác định (of the three sisters, of all). Dùng \"in\" với nhóm hoặc nơi chốn số ít (in the family, in Vietnam)."},{"topic":2,"stem":"Ha Long Bay is one of the most beautiful places ______ Vietnam.","opts":["of","at","for","in"],"c":3,"exp":"Dùng \"in\" + nơi chốn (in Vietnam, in the world, in the class). \"of\" dùng với danh từ số nhiều hoặc \"all\" (of the three, of all)."},{"topic":2,"stem":"Summer is ______ season of the year in Hanoi.","opts":["the hotest","hotter","the most hot","the hottest"],"c":3,"exp":"\"hot\" có một nguyên âm + một phụ âm cuối → gấp đôi phụ âm: the hottest. Sai: \"hotest\" (thiếu t), \"the most hot\" (tính từ ngắn), \"hotter\" (so sánh hơn)."},{"topic":3,"stem":"My sister is 20 years old and I am 20 years old. I am ______ my sister.","opts":["as old as","older than","as older as","the oldest"],"c":0,"exp":"Cả hai bằng tuổi nhau nên dùng so sánh bằng: as + adj + as. Tính từ giữ nguyên dạng gốc, không thêm -er (as older as là sai)."},{"topic":3,"stem":"This soup isn't ______ that one.","opts":["as spicy than","as spicier as","as spicy as","so spicier as"],"c":2,"exp":"Phủ định của so sánh bằng: not as + adj + as. Tính từ giữ nguyên (spicy), không thêm -er và không dùng \"than\"."},{"topic":3,"stem":"He doesn't run ______ his brother.","opts":["as fastly as","as fast as","as faster as","fast as"],"c":1,"exp":"So sánh bằng với trạng từ: as + adverb + as. \"fast\" vừa là tính từ vừa là trạng từ, không có dạng \"fastly\"; không thêm -er trong as ... as; thiếu \"as\" đầu thì sai cấu trúc."},{"topic":3,"stem":"The new manager works ______ the old one. They both work very hard.","opts":["as hard than","as harder as","as hardly as","as hard as"],"c":3,"exp":"Cả hai đều chăm chỉ như nhau → as hard as. \"hard\" là trạng từ chỉ cách thức; \"hardly\" có nghĩa khác (hầu như không). Không thêm -er và không dùng \"than\"."},{"topic":3,"stem":"Yesterday it was 15°C. Today it is 20°C. Today is not ______ yesterday.","opts":["as cold as","the coldest","as colder as","cold than"],"c":0,"exp":"Phủ định so sánh bằng: not as + adj + as. Tính từ giữ nguyên dạng gốc (cold). \"as colder as\" sai vì không thêm -er; \"the coldest\" là so sánh nhất, không phù hợp ở đây."},{"topic":3,"stem":"This laptop and that laptop cost the same. This laptop is as ______ as that one.","opts":["more expensive","the most expensive","expensive","expensively"],"c":2,"exp":"Trong cấu trúc as + adj + as, tính từ giữ nguyên dạng gốc: as expensive as. Không dùng more/most, và không dùng trạng từ (expensively) sau động từ \"be\"."},{"topic":3,"stem":"She sings ______ beautifully as her mother.","opts":["more","as","most","than"],"c":1,"exp":"So sánh bằng với trạng từ: as + adverb + as (as beautifully as). Chỗ trống là \"as\" đầu tiên; \"more\" và \"than\" thuộc cấu trúc so sánh hơn."},{"topic":3,"stem":"This shirt and that shirt have the same price. This shirt costs ______ that one.","opts":["more than","as many as","the most","as much as"],"c":3,"exp":"Hai áo giá bằng nhau → so sánh bằng as much as. \"more than\" nghĩa là đắt hơn; \"as many as\" dùng với danh từ đếm được số nhiều; \"the most\" là so sánh nhất."},{"topic":4,"stem":"You had an accident yesterday. Please drive ______ than before.","opts":["more careful","carefuller","most careful","more carefully"],"c":3,"exp":"Bổ nghĩa cho động từ \"drive\" cần trạng từ. So sánh hơn của trạng từ đuôi -ly: more + adverb + than → more carefully. \"careful\" là tính từ; \"carefuller\" không tồn tại."},{"topic":4,"stem":"Minh runs ______ than his friends.","opts":["more fast","fastly","faster","more fastly"],"c":2,"exp":"\"fast\" vừa là tính từ vừa là trạng từ; so sánh hơn: faster than. Không có \"fastly\"; không dùng more với trạng từ ngắn."},{"topic":4,"stem":"Lan studies the ______ in our class.","opts":["hardest","harder","most hard","more hardly"],"c":0,"exp":"Trạng từ ngắn \"hard\" → the hardest (the + adv-est). \"harder\" là so sánh hơn; \"most hard\" sai vì \"hard\" là trạng từ ngắn."},{"topic":4,"stem":"Of all the workers, Mai works the ______.","opts":["more carefully","most careful","most carefully","carefullest"],"c":2,"exp":"Trạng từ đuôi -ly dùng the most + adverb cho so sánh nhất: the most carefully. \"most careful\" là tính từ; \"carefullest\" không tồn tại; \"more carefully\" là so sánh hơn."},{"topic":4,"stem":"This new printer works ______ than the old one.","opts":["gooder","more well","best","better"],"c":3,"exp":"Trạng từ của \"good\" là \"well\": well → better → the best. Có \"than\" nên dùng so sánh hơn: works better than. \"gooder\" và \"more well\" không tồn tại; \"best\" là so sánh nhất."},{"topic":4,"stem":"He drives ______ than his wife. He has had three accidents.","opts":["worse","more bad","badder","worst"],"c":0,"exp":"\"badly\" → worse → the worst (bất quy tắc). Có \"than\" nên cần so sánh hơn: worse than. \"badder\" và \"more bad\" sai; \"worst\" là so sánh nhất."},{"topic":4,"stem":"My mother cooks ______ of all my family.","opts":["the better","the best","the most well","the goodest"],"c":1,"exp":"\"well\" → better → the best. \"of all my family\" là so sánh nhất → the best. \"the better\" dùng khi so sánh hai người; \"the most well\" và \"the goodest\" không tồn tại."},{"topic":5,"stem":"This phone costs 5 million dong and that one costs 8 million dong. This phone is ______ expensive than that one, so I will buy it.","opts":["less","least","fewer","little"],"c":0,"exp":"less + adj + than nghĩa là \"ít ... hơn\". \"least\" là so sánh nhất (the least) và không đi với \"than\"; \"fewer\" dùng với danh từ đếm được số nhiều."},{"topic":5,"stem":"The blue bag costs 100,000 dong, the red bag costs 200,000 dong and the green bag costs 300,000 dong. The blue bag is ______ expensive bag of the three.","opts":["the little","less","the least","least"],"c":2,"exp":"So sánh nhất của less là the least. Có ba đối tượng (of the three) và đứng trước danh từ \"bag\" nên cần \"the\": the least expensive bag."},{"topic":5,"stem":"Cycling is ______ dangerous than driving in the city.","opts":["least","lesser","fewer","less"],"c":3,"exp":"less + adj + than: ít nguy hiểm hơn. \"least\" là so sánh nhất; \"fewer\" dùng với danh từ đếm được; \"lesser\" không dùng trong cấu trúc này."},{"topic":5,"stem":"The film was ______ interesting than the book, so I liked the book more.","opts":["fewer","less","least","little"],"c":1,"exp":"Thích sách hơn nên phim kém thú vị hơn: less interesting than. Không dùng \"fewer\" (danh từ đếm được) hay \"least\" (so sánh nhất, không đi với than)."},{"topic":5,"stem":"We looked at five hotels. We chose the hotel that was ______ expensive in the city.","opts":["less","fewer","the little","the least"],"c":3,"exp":"Chọn khách sạn rẻ nhất trong thành phố → the least expensive. Đây là so sánh nhất (in the city). \"less\" là so sánh hơn; \"fewer\" dùng với danh từ đếm được."},{"topic":6,"stem":"Class A has 25 students and Class B has 30 students. There are ______ students in Class A than in Class B.","opts":["less","littler","lesser","fewer"],"c":3,"exp":"\"students\" là danh từ đếm được số nhiều và lớp A ít hơn → fewer + plural noun + than. \"less\" dùng với danh từ không đếm được."},{"topic":6,"stem":"I have one cup of coffee a day. My husband has three cups. I drink ______ coffee than my husband.","opts":["fewer","less","a few","many"],"c":1,"exp":"\"coffee\" là danh từ không đếm được → less + uncountable noun + than. \"fewer\" dùng với danh từ đếm được số nhiều; \"a few\" và \"many\" không tạo so sánh với than."},{"topic":6,"stem":"Tokyo has ______ people than Hanoi.","opts":["more","most","much","many"],"c":0,"exp":"Cấu trúc more + plural / uncountable noun + than. \"most\" là so sánh nhất; \"much\" và \"many\" không tạo dạng so sánh hơn."},{"topic":6,"stem":"Ms. Lan has 200 books. Her teacher has 200 books too. She has as ______ books as her teacher.","opts":["much","more","many","most"],"c":2,"exp":"as many + danh từ đếm được số nhiều + as. \"books\" đếm được nên dùng \"many\"; \"as much\" dùng với danh từ không đếm được."},{"topic":6,"stem":"You have a lot of money, but I don't. I don't have as ______ money as you.","opts":["many","fewer","much","less"],"c":2,"exp":"\"money\" là danh từ không đếm được → as much money as. \"many\" dùng với danh từ đếm được số nhiều; trong cấu trúc as ... as không dùng fewer/less."},{"topic":6,"stem":"Team A scored 3 goals, Team B scored 5 goals and Team C scored 1 goal. Team C scored ______ goals of the three teams.","opts":["the fewest","the least","the littlest","the most little"],"c":0,"exp":"\"goals\" là danh từ đếm được số nhiều → the fewest goals. \"the least\" dùng với danh từ không đếm được (the least water); \"the littlest\" và \"the most little\" không dùng trong cấu trúc này."},{"topic":6,"stem":"We hired 30 new people this year, so our company has ______ employees than last year.","opts":["most","more","much","the more"],"c":1,"exp":"more + danh từ số nhiều + than: nhiều nhân viên hơn năm ngoái. \"most\" là so sánh nhất; \"much\" không đi với danh từ đếm được."},{"topic":6,"stem":"You and I have the same amount of free time. I have as ______ time as you.","opts":["more","as many","so much","as much"],"c":3,"exp":"\"time\" là danh từ không đếm được nên dùng as much ... as. \"as many\" dùng với danh từ đếm được số nhiều; \"more\" nghĩa là nhiều hơn, không phải bằng nhau."},{"topic":7,"stem":"______ you practice, ______ your English will be.","opts":["The more / the better","More / better","The more / better","More / the better"],"c":0,"exp":"So sánh kép: The + so sánh hơn + S + V, the + so sánh hơn + S + V. Cả hai vế đều cần \"the\": The more you practice, the better your English will be."},{"topic":7,"stem":"The ______ the weather is, the ______ I feel.","opts":["hot / tired","hottest / most tired","hotter / more tired","more hot / tireder"],"c":2,"exp":"Cả hai vế dùng the + so sánh hơn: The hotter ..., the more tired ... \"hot\" gấp đôi phụ âm → hotter; \"tired\" không thêm -er mà dùng more tired."},{"topic":7,"stem":"The air in big cities is getting ______.","opts":["pollutedder","most polluted","the more polluted","more and more polluted"],"c":3,"exp":"Sự thay đổi tăng dần với tính từ dài: more and more + adj → more and more polluted. Không thêm -er (pollutedder) và không dùng most / the more."},{"topic":7,"stem":"Our dog is eating a lot. He is getting ______ every day.","opts":["fat and fat","fatter and fatter","more fat","the fattest"],"c":1,"exp":"Tính từ ngắn: adj-er and adj-er → fatter and fatter (fat gấp đôi phụ âm). \"fat and fat\" thiếu -er; \"more fat\" không dùng với tính từ ngắn."},{"topic":7,"stem":"The earlier you start, ______ you will finish.","opts":["sooner","the soonest","the sooner","more soon"],"c":2,"exp":"Vế sau của so sánh kép cũng cần the + so sánh hơn: the sooner. Thiếu \"the\" (sooner) hoặc dùng so sánh nhất (the soonest) đều sai."},{"topic":7,"stem":"Online courses are becoming ______ popular.","opts":["popularer and popularer","more more","most and most","more and more"],"c":3,"exp":"\"popular\" là tính từ dài → more and more popular. Không lặp lại tính từ dài (popularer and popularer) và không viết \"more more\"."},{"topic":8,"stem":"Anna and Ben bought the same model of phone. Anna's phone is ______ Ben's phone.","opts":["different from","the same as","same","the same to"],"c":1,"exp":"Hai điện thoại giống hệt nhau → the same as. Cấu trúc: the same (+ noun) + as + noun. Không bỏ \"the\" và không dùng \"to\"."},{"topic":8,"stem":"A car is ______ a motorbike: a car has four wheels, and a motorbike has two.","opts":["different from","different as","different with","different of"],"c":0,"exp":"Khác nhau → different from + noun (tiếng Anh Anh cũng dùng different to). Không dùng as / with / of sau \"different\"."},{"topic":8,"stem":"My bike and yours look alike, but the colors are different. My bike is ______ yours.","opts":["same as","similar as","similar to","the same like"],"c":2,"exp":"Giống nhau ở nhiều điểm nhưng không giống hệt → similar to. \"similar\" đi với giới từ \"to\"; \"same as\" thiếu \"the\" và nghĩa là giống hệt."},{"topic":8,"stem":"Look at the two shirts. I can't see any difference. They are ______.","opts":["the same as","same to","different","the same"],"c":3,"exp":"Chủ ngữ là hai vật (They) thì dùng the same, không có \"as\" vì không có đối tượng nào đứng sau. \"the same as\" cần một danh từ/đại từ theo sau."},{"topic":8,"stem":"My brother and I were both born on 5 May. We have ______ birthday.","opts":["same","the same","similar","different"],"c":1,"exp":"Cùng một ngày sinh → the same birthday. Cần \"the\" trước \"same\". \"similar\" nghĩa là tương tự chứ không phải trùng hoàn toàn."},{"topic":9,"stem":"This bag costs 500,000 dong and that bag costs 100,000 dong. This bag is ______ more expensive than that one.","opts":["very","so","too","much"],"c":3,"exp":"Nhấn mạnh sự khác biệt lớn: much / a lot / far + so sánh hơn (much more expensive). Không dùng very, so, too trước dạng so sánh hơn."},{"topic":9,"stem":"The new model is only ______ faster than the old one. It is just 2 km/h faster.","opts":["slightly","much","far","a lot"],"c":0,"exp":"Chỉ nhanh hơn 2 km/h → khác biệt nhỏ → slightly (a bit / a little) + so sánh hơn. \"much, far, a lot\" dùng để nhấn mạnh sự khác biệt lớn."},{"topic":9,"stem":"Mount Everest is ______ the highest mountain in the world.","opts":["very","by far","more","so"],"c":1,"exp":"by far + the + so sánh nhất: nhấn mạnh vượt trội hơn hẳn (by far the highest). Không dùng very hay so trước the highest."},{"topic":9,"stem":"A bus ticket costs 10,000 dong. A taxi ride costs 20,000 dong. A taxi ride costs ______ a bus ticket.","opts":["twice more than","two times than","twice as much as","as twice much as"],"c":2,"exp":"Gấp đôi: twice as + adj / much + as. Taxi giá gấp đôi vé xe buýt → twice as much as. \"twice more than\" và \"two times than\" không đúng cấu trúc."},{"topic":9,"stem":"It was raining a little an hour ago, but now it is raining ______ harder.","opts":["very","a lot","more","too"],"c":1,"exp":"Nhấn mạnh sự khác biệt lớn: a lot + so sánh hơn (a lot harder). Không dùng \"very\" hay \"more\" trước \"harder\"; \"too\" nghĩa là quá mức."}];
+
+const PER_PAGE = 10;
+const LIMIT = 30 * 60;           // suggested time in seconds (the bar fills toward this)
+const LETTERS = ['A', 'B', 'C', 'D'];
+const TOPICS = {
+  1: { en: 'Comparative adjectives', vi: 'So sánh hơn của tính từ' },
+  2: { en: 'Superlative adjectives', vi: 'So sánh nhất của tính từ' },
+  3: { en: 'Equal comparison: as ... as', vi: 'So sánh bằng' },
+  4: { en: 'Comparative and superlative adverbs', vi: 'So sánh của trạng từ' },
+  5: { en: 'Less and the least', vi: 'So sánh kém hơn và kém nhất' },
+  6: { en: 'Comparisons with nouns', vi: 'So sánh với danh từ' },
+  7: { en: 'Double comparatives', vi: 'So sánh kép' },
+  8: { en: 'The same, different and similar', vi: 'Giống nhau, khác nhau và tương tự' },
+  9: { en: 'Stronger or weaker comparisons', vi: 'Nhấn mạnh hoặc giảm nhẹ mức độ so sánh' }
+};
+
+const TOTAL = QUESTIONS.length;
+const PAGES = Math.ceil(TOTAL / PER_PAGE);
+const answers = new Array(TOTAL).fill(null);
+let page = 0;
+let finished = false;
+let confirmSubmit = false;
+const startTime = Date.now();
+let finalSeconds = 0;
+
+const $ = id => document.getElementById(id);
+function esc(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function fmt(sec) {
+  const m = Math.floor(sec / 60).toString().padStart(2, '0');
+  const s = (sec % 60).toString().padStart(2, '0');
+  return m + ':' + s;
+}
+function stemHtml(s) { return esc(s); }
+
+/* ---------- Timer ---------- */
+function tick() {
+  if (finished) return;
+  const sec = Math.floor((Date.now() - startTime) / 1000);
+  $('elapsed').textContent = fmt(sec);
+  const pct = Math.min(100, (sec / LIMIT) * 100);
+  const fill = $('timeFill');
+  fill.style.width = pct + '%';
+  fill.className = 'fill' + (sec >= LIMIT ? ' over' : (sec >= LIMIT * 0.8 ? ' warn' : ''));
+  $('limitLabel').textContent = sec >= LIMIT ? 'Over the suggested time (' + fmt(LIMIT) + ')' : 'Suggested time: ' + fmt(LIMIT);
+}
+const timerId = setInterval(tick, 500);
+tick();
+
+/* ---------- Quiz pages ---------- */
+function pageRange(p) { return [p * PER_PAGE, Math.min(TOTAL, (p + 1) * PER_PAGE)]; }
+function pageDone(p) {
+  const [a, b] = pageRange(p);
+  for (let i = a; i < b; i++) if (answers[i] === null) return false;
+  return true;
+}
+function renderChips() {
+  let h = '';
+  for (let p = 0; p < PAGES; p++) {
+    const [a, b] = pageRange(p);
+    h += '<button type="button" class="chip' + (p === page ? ' active' : '') + (pageDone(p) ? ' done' : '') +
+         '" data-page="' + p + '">Part ' + (p + 1) + ' (' + (a + 1) + '–' + b + ')</button>';
+  }
+  $('chips').innerHTML = h;
+}
+function renderPage() {
+  const [a, b] = pageRange(page);
+  $('pageIndicator').textContent = 'Part ' + (page + 1) + ' of ' + PAGES + '  ·  Questions ' + (a + 1) + '–' + b;
+  let h = '';
+  for (let i = a; i < b; i++) {
+    const q = QUESTIONS[i];
+    h += '<div class="question"><p class="qtext"><span class="num">' + (i + 1) + '.</span> ' + stemHtml(q.stem) + '</p>';
+    q.opts.forEach((o, k) => {
+      h += '<label class="option"><input type="radio" name="q' + i + '" value="' + k + '"' +
+           (answers[i] === k ? ' checked' : '') + '> (' + LETTERS[k] + ') ' + esc(o) + '</label>';
+    });
+    h += '</div>';
+  }
+  $('pageBody').innerHTML = h;
+  $('backBtn').style.visibility = page === 0 ? 'hidden' : 'visible';
+  $('nextBtn').innerHTML = page === PAGES - 1 ? 'Submit' : 'Next &rarr;';
+  renderChips();
+  resetConfirm();
+}
+function goto(p) {
+  page = Math.max(0, Math.min(PAGES - 1, p));
+  renderPage();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function unansweredList() {
+  const out = [];
+  answers.forEach((a, i) => { if (a === null) out.push(i + 1); });
+  return out;
+}
+function resetConfirm() {
+  confirmSubmit = false;
+  $('warning').style.display = 'none';
+  if (page === PAGES - 1) $('nextBtn').innerHTML = 'Submit';
+}
+
+$('pageBody').addEventListener('change', e => {
+  const t = e.target;
+  if (t && t.type === 'radio') {
+    const i = parseInt(t.name.slice(1), 10);
+    answers[i] = parseInt(t.value, 10);
+    renderChips();
+    if (confirmSubmit) resetConfirm();
+  }
+});
+$('chips').addEventListener('click', e => {
+  const b = e.target.closest('.chip');
+  if (b) goto(parseInt(b.getAttribute('data-page'), 10));
+});
+$('backBtn').addEventListener('click', () => goto(page - 1));
+$('nextBtn').addEventListener('click', () => {
+  if (page < PAGES - 1) { goto(page + 1); return; }
+  const missing = unansweredList();
+  if (missing.length && !confirmSubmit) {
+    confirmSubmit = true;
+    const w = $('warning');
+    w.textContent = 'You have ' + missing.length + ' unanswered question' + (missing.length > 1 ? 's' : '') +
+      ' (' + missing.join(', ') + '). Click Submit again to finish anyway, or use the Part buttons to go back.';
+    w.style.display = 'block';
+    $('nextBtn').textContent = 'Submit anyway';
+    return;
+  }
+  finish();
+});
+
+/* ---------- Result ---------- */
+function finish() {
+  finished = true;
+  clearInterval(timerId);
+  finalSeconds = Math.floor((Date.now() - startTime) / 1000);
+
+  let correct = 0;
+  const byTopic = {};
+  QUESTIONS.forEach((q, i) => {
+    const t = byTopic[q.topic] || (byTopic[q.topic] = { c: 0, n: 0 });
+    t.n++;
+    if (answers[i] === q.c) { correct++; t.c++; }
+  });
+  const pct = Math.round((correct / TOTAL) * 100);
+
+  $('timerBar').style.display = 'none';
+  $('directions').style.display = 'none';
+  $('quiz').style.display = 'none';
+  $('result').style.display = 'block';
+  $('scorePercent').textContent = pct + '%';
+  $('scoreCount').textContent = correct + ' / ' + TOTAL + ' correct';
+  $('finalTime').textContent = fmt(finalSeconds);
+
+  let rows = '';
+  const weak = [];
+  Object.keys(byTopic).forEach(id => {
+    const t = byTopic[id];
+    const p = Math.round((t.c / t.n) * 100);
+    const low = p < 70;
+    if (low) weak.push(id + '. ' + TOPICS[id].en);
+    rows += '<div class="topic-row"><div class="tname">' + id + '. ' + esc(TOPICS[id].en) +
+            '<small>' + esc(TOPICS[id].vi) + '</small></div>' +
+            '<div class="mini-track"><div class="mini-fill' + (low ? ' low' : '') + '" style="width:' + p + '%"></div></div>' +
+            '<div class="tscore">' + t.c + '/' + t.n + '</div></div>';
+  });
+  $('topicRows').innerHTML = rows;
+  $('reviewHint').textContent = weak.length
+    ? 'Nên ôn lại (dưới 70%): ' + weak.join('; ') + '. Số thứ tự trùng với các mục trong handout.'
+    : 'Tuyệt vời! Bạn đạt từ 70% trở lên ở tất cả các cấu trúc.';
+
+  renderReview('all');
+  window.scrollTo({ top: 0 });
+}
+
+function renderReview(filter) {
+  let h = '';
+  let shown = 0;
+  QUESTIONS.forEach((q, i) => {
+    const a = answers[i];
+    const ok = a === q.c;
+    if (filter === 'wrong' && ok) return;
+    shown++;
+    const cls = ok ? 'ok' : (a === null ? 'skip' : 'bad');
+    const status = ok ? '✓ Correct' : (a === null ? 'Not answered' : '✗ Incorrect');
+    h += '<div class="rev ' + cls + '"><div class="rev-head"><p class="qtext" style="margin:0"><span class="num">' + (i + 1) + '.</span> ' +
+         stemHtml(q.stem) + '</p><span class="rev-status">' + status + '</span></div>' +
+         '<div class="rev-topic">' + esc(TOPICS[q.topic].en) + '</div>';
+    q.opts.forEach((o, k) => {
+      let c = '', tag = '';
+      if (k === q.c) { c = ' correct'; tag = '<span class="tag">✓ Correct answer</span>'; }
+      else if (k === a) { c = ' wrong'; tag = '<span class="tag">✗ Your answer</span>'; }
+      if (k === q.c && a === q.c) tag = '<span class="tag">✓ Your answer</span>';
+      h += '<div class="ropt' + c + '">(' + LETTERS[k] + ') ' + esc(o) + tag + '</div>';
+    });
+    h += '<div class="exp"><b>Giải thích:</b> ' + esc(q.exp) + '</div></div>';
+  });
+  if (!shown) h = '<p style="text-align:center;color:#1d6b50;font-weight:bold;">No wrong answers. Excellent!</p>';
+  $('reviewList').innerHTML = h;
+  document.querySelectorAll('.filterBtn').forEach(b => b.classList.toggle('active', b.getAttribute('data-filter') === filter));
+}
+document.querySelectorAll('.filterBtn').forEach(b =>
+  b.addEventListener('click', () => renderReview(b.getAttribute('data-filter'))));
+$('retryBtn').addEventListener('click', () => location.reload());
+
+renderPage();
+</script>
+</body>
+</html>
